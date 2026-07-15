@@ -5,23 +5,43 @@ released build or build it yourself from source.
 
 ## Install a released build
 
-### F-Droid (recommended)
+### Obtainium (recommended)
 
-F-Droid is the primary distribution channel (see
-[ADR 0005](adr/0005-gpl3-and-fdroid-first.md)). Once published, install it from
-the F-Droid client or catalogue. F-Droid builds are reproducible from this
-repository and signed by F-Droid.
+[Obtainium](https://github.com/ImranR98/Obtainium) installs apps straight from
+their source — here, the GitHub Releases of this repo — and keeps them updated
+automatically. It's the recommended way to install today, and unlike a manual
+sideload it handles update notifications for you.
 
-### Sideload an APK
+1. Install Obtainium (itself available from
+   [F-Droid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid/) or its
+   own [GitHub Releases](https://github.com/ImranR98/Obtainium/releases)).
+2. In Obtainium, tap **Add App** and paste this repo's URL:
+   `https://github.com/kisst/link-clear`
+3. Obtainium picks up the signed APK from the latest release. Install it, and
+   it will offer updates whenever a new release is published.
 
-If you have an APK from the project's GitHub Releases:
+Because every release APK is signed with the same key
+(see [ADR 0007](adr/0007-release-and-packaging.md)), Obtainium's update checks
+verify the signature stays consistent.
+
+### F-Droid
+
+F-Droid is the intended long-term distribution channel (see
+[ADR 0005](adr/0005-gpl3-and-fdroid-first.md)). It is **not yet published**
+there. Once it is, you'll be able to install it from any F-Droid client;
+F-Droid builds reproducibly from this repo and signs with its own key.
+
+### Manual sideload
+
+If you'd rather install the APK by hand, grab it from the
+[latest release](https://github.com/kisst/link-clear/releases/latest):
 
 1. On your device, enable **Install unknown apps** for your file manager or
    browser (Settings → Apps → Special access).
 2. Open the downloaded `.apk` and confirm the install.
 
-Verify the APK's signature/checksum against the release notes before
-installing.
+Verify the APK's signature against the release notes before installing — the
+signing certificate SHA-256 is fixed across all releases.
 
 ## Build from source
 
