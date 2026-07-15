@@ -29,7 +29,9 @@ verify the signature stays consistent.
 F-Droid is the intended long-term distribution channel (see
 [ADR 0005](adr/0005-gpl3-and-fdroid-first.md)). It is **not yet published**
 there. Once it is, you'll be able to install it from any F-Droid client;
-F-Droid builds reproducibly from this repo and signs with its own key.
+F-Droid builds reproducibly from this repo and signs with its own key. The
+submission plan is documented in
+[docs/fdroid-submission.md](fdroid-submission.md).
 
 ### Manual sideload
 
