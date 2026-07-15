@@ -1,14 +1,14 @@
 # Store-listing images
 
-Screenshots are present under `phoneScreenshots/` (`1.png`–`3.png`, captured on
-a device). One asset is still missing:
+All assets for the F-Droid store listing are present:
 
-## `icon.png` (to add)
+- `icon.png` — 512 × 512 launcher icon, composited from the app's adaptive-icon
+  vector layers (`app/src/main/res/drawable/ic_launcher_{background,foreground}.xml`).
+- `phoneScreenshots/1.png`–`3.png` — captured on-device (editor, share
+  confirmation, settings).
 
-A **512 × 512 PNG** launcher icon. The app ships only vector drawables
-(`app/src/main/res/drawable/ic_launcher_*.xml`), so render a 512px PNG from the
-adaptive icon — e.g. in Android Studio via **Image Asset Studio**, or export the
-foreground+background layers composited at 512×512. Place it here as `icon.png`.
+If the launcher icon design changes, re-render `icon.png` from the updated
+vector layers at 512 × 512.
 
 See [docs/fdroid-submission.md](../../../../../docs/fdroid-submission.md) for how
 these assets fit into the overall submission.
