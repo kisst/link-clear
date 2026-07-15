@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  App base theme. The UI is entirely Jetpack Compose (LinkClearTheme draws all
+  Material3 surfaces), so this framework theme only governs the window before
+  Compose composes: background and system-bar treatment. Light variant here;
+  values-night/ supplies the dark counterpart so the pre-Compose window tracks
+  the system setting (rather than being locked to light as the old theme was),
+  matching LinkClearTheme. Split by resource qualifier because the DayNight
+  DeviceDefault variants are not available at minSdk 26.
+-->
+<resources>
+    <style name="Theme.LinkClear" parent="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pre-Android-12 (fullBackupContent) rules. Mirrors data_extraction_rules.xml:
+  exclude the settings DataStore (may hold a resolver API key) from Auto Backup,
+  while leaving backup enabled for the rest of the app.
+-->
+<full-backup-content>
+    <exclude
+        domain="file"
+        path="datastore/settings.preferences_pb" />
+</full-backup-content>

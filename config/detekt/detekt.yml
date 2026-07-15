@@ -1,0 +1,42 @@
+# Detekt config for Link Clear. Builds upon the default rule set
+# (buildUponDefaultConfig = true); entries here only override defaults.
+complexity:
+  LongMethod:
+    # cleanInternal is a linear pipeline; Compose screens build a whole UI tree
+    # in one function. Both read as a single unit. Compose fns exempted below.
+    threshold: 120
+    ignoreAnnotated: ['Composable']
+  LongParameterList:
+    # Compose screens take one lambda per user action + state; that is idiomatic,
+    # not a smell. Non-Compose code still held to the default.
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # Compose screens and settings stores legitimately expose many small fns.
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+  NestedBlockDepth:
+    # readBoundedResponse: bounded read loop inside try/use is the clearest form.
+    threshold: 5
+
+naming:
+  FunctionNaming:
+    # @Composable functions are PascalCase by Compose convention.
+    ignoreAnnotated: ['Composable']
+
+style:
+  MaxLineLength:
+    maxLineLength: 120
+  ReturnCount:
+    # Guard-clause-heavy resolvers return early on each failure mode.
+    max: 6
+  MagicNumber:
+    # Noisy against Compose dp/sp literals and timeouts already named as consts.
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    # The engine and resolvers deliberately catch broad Exception to guarantee
+    # "never throw on user input / network failure" contracts.
+    active: false
+  SwallowedException:
+    active: false

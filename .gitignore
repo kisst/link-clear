@@ -1,0 +1,17 @@
+.remember/
+*.iml
+.gradle/
+/local.properties
+/.idea/
+/build/
+build/
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+*.jks
+*.keystore
+signing-secrets.env
+.superpowers/
+.attic/

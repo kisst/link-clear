@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Single-color silhouette; Android tints this for themed icons -->
+    <path android:pathData="M55.76,44.00 L60.24,44.00 Q62.00,44.00 62.00,45.76 L62.00,50.24 Q62.00,52.00 60.24,52.00 L55.76,52.00 Q54.00,52.00 54.00,50.24 L54.00,45.76 Q54.00,44.00 55.76,44.00 Z" android:fillColor="#FFFFFF" android:fillAlpha="1.0" />
+    <path android:pathData="M48.04,38.50 L51.96,38.50 Q53.50,38.50 53.50,40.04 L53.50,43.96 Q53.50,45.50 51.96,45.50 L48.04,45.50 Q46.50,45.50 46.50,43.96 L46.50,40.04 Q46.50,38.50 48.04,38.50 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.92" />
+    <path android:pathData="M41.32,33.00 L44.68,33.00 Q46.00,33.00 46.00,34.32 L46.00,37.68 Q46.00,39.00 44.68,39.00 L41.32,39.00 Q40.00,39.00 40.00,37.68 L40.00,34.32 Q40.00,33.00 41.32,33.00 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.8" />
+    <path android:pathData="M38.32,47.00 L41.68,47.00 Q43.00,47.00 43.00,48.32 L43.00,51.68 Q43.00,53.00 41.68,53.00 L38.32,53.00 Q37.00,53.00 37.00,51.68 L37.00,48.32 Q37.00,47.00 38.32,47.00 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.72" />
+    <path android:pathData="M32.46,41.25 L35.54,41.25 Q36.75,41.25 36.75,42.46 L36.75,45.54 Q36.75,46.75 35.54,46.75 L32.46,46.75 Q31.25,46.75 31.25,45.54 L31.25,42.46 Q31.25,41.25 32.46,41.25 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.6" />
+    <path android:pathData="M31.60,55.50 L34.40,55.50 Q35.50,55.50 35.50,56.60 L35.50,59.40 Q35.50,60.50 34.40,60.50 L31.60,60.50 Q30.50,60.50 30.50,59.40 L30.50,56.60 Q30.50,55.50 31.60,55.50 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.5" />
+    <path android:pathData="M25.60,35.50 L28.40,35.50 Q29.50,35.50 29.50,36.60 L29.50,39.40 Q29.50,40.50 28.40,40.50 L25.60,40.50 Q24.50,40.50 24.50,39.40 L24.50,36.60 Q24.50,35.50 25.60,35.50 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.42" />
+    <path android:pathData="M24.74,49.75 L27.26,49.75 Q28.25,49.75 28.25,50.74 L28.25,53.26 Q28.25,54.25 27.26,54.25 L24.74,54.25 Q23.75,54.25 23.75,53.26 L23.75,50.74 Q23.75,49.75 24.74,49.75 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.34" />
+    <path android:pathData="M22.88,62.00 L25.12,62.00 Q26.00,62.00 26.00,62.88 L26.00,65.12 Q26.00,66.00 25.12,66.00 L22.88,66.00 Q22.00,66.00 22.00,65.12 L22.00,62.88 Q22.00,62.00 22.88,62.00 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.26" />
+    <path android:pathData="M17.88,44.00 L20.12,44.00 Q21.00,44.00 21.00,44.88 L21.00,47.12 Q21.00,48.00 20.12,48.00 L17.88,48.00 Q17.00,48.00 17.00,47.12 L17.00,44.88 Q17.00,44.00 17.88,44.00 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.2" />
+    <path android:pathData="M17.02,56.25 L18.98,56.25 Q19.75,56.25 19.75,57.02 L19.75,58.98 Q19.75,59.75 18.98,59.75 L17.02,59.75 Q16.25,59.75 16.25,58.98 L16.25,57.02 Q16.25,56.25 17.02,56.25 Z" android:fillColor="#FFFFFF" android:fillAlpha="0.14" />
+    <path
+        android:pathData="M60,70 a13,13 0 0 1 0,-18 l8,-8 a13,13 0 0 1 18,18 l-3,3"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M70,60 a13,13 0 0 1 0,18 l-8,8 a13,13 0 0 1 -18,-18"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round" />
+</vector>

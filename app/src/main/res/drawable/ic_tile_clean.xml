@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#FFFFFF">
+    <!-- Tile glyph: just the clean link (pixels omitted — illegible at tile size) -->
+    <path
+        android:pathData="M54,64 a13,13 0 0 1 0,-18 l8,-8 a13,13 0 0 1 18,18 l-3,3"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M64,54 a13,13 0 0 1 0,18 l-8,8 a13,13 0 0 1 -18,-18 l3,-3"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="8"
+        android:strokeLineCap="round" />
+    <!-- one small sparkle to hint 'clean' -->
+    <path android:pathData="M30,34 l2,5 5,2 -5,2 -2,5 -2,-5 -5,-2 5,-2 z"
+        android:fillColor="#FFFFFF" />
+</vector>
