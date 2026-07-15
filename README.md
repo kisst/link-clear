@@ -1,9 +1,16 @@
 # Link Clear
 
+[![Latest release](https://img.shields.io/github/v/release/kisst/link-clear?sort=semver)](https://github.com/kisst/link-clear/releases/latest)
+[![CI](https://github.com/kisst/link-clear/actions/workflows/ci.yml/badge.svg)](https://github.com/kisst/link-clear/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+
 Link Clear is an Android app that strips tracking parameters from URLs using
 the bundled [ClearURLs](https://github.com/ClearURLs/Rules) ruleset. It works
 entirely offline by default: paste or share a link, get back the same link
 with tracking noise removed.
+
+**[Download the latest APK](https://github.com/kisst/link-clear/releases/latest)**
+(Android 8.0+), or see [installation options](docs/INSTALL.md).
 
 ## Surfaces
 
