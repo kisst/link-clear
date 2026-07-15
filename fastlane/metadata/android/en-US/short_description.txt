@@ -1,0 +1,1 @@
+Strip tracking parameters from links. Offline, private, no permissions.
