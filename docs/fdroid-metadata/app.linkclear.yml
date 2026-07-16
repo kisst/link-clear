@@ -1,0 +1,27 @@
+Categories:
+  - Internet
+  - Security
+License: GPL-3.0-only
+AuthorName: KissT
+WebSite: https://github.com/kisst/link-clear
+SourceCode: https://github.com/kisst/link-clear
+IssueTracker: https://github.com/kisst/link-clear/issues
+Changelog: https://github.com/kisst/link-clear/releases
+
+AutoName: Link Clear
+
+RepoType: git
+Repo: https://github.com/kisst/link-clear.git
+
+Builds:
+  - versionName: "1.0"
+    versionCode: 1
+    commit: v1.0.0
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version v%v.0
+UpdateCheckMode: Tags
+CurrentVersion: "1.0"
+CurrentVersionCode: 1
