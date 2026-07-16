@@ -28,12 +28,19 @@ The **store listing** (title, descriptions, screenshots, icon) is NOT in this
 file — F-Droid reads it from the Fastlane tree at `fastlane/metadata/android/`
 on the repo's default branch, which is already committed.
 
-## Before submitting: lint locally
+## Validation status
 
-`fdroidserver` is required to normalise and validate the recipe. It is not
-assumed to be installed; install it first (Debian/Ubuntu:
-`sudo apt install fdroidserver`, or `pip install fdroidserver`), then from a
-clone of your fdroiddata fork:
+This recipe was checked with `fdroidserver` 2.4.5 inside a real `fdroiddata`
+clone (its `config/categories.yml` is needed for category validation):
+
+- `fdroid lint app.linkclear` -> **clean** (exit 0). `Internet` and `Security`
+  are valid categories in the current F-Droid category set.
+- `fdroid rewritemeta app.linkclear` -> **clean**; the file here is already in
+  canonical form (single-quoted version strings), so it will not be rewritten.
+
+Re-run these before the MR in case F-Droid's policy or category set has changed
+since. Install the tool with `pipx install fdroidserver` (or
+`pip install fdroidserver`), then from a clone of your fdroiddata fork:
 
 ```sh
 cp app.linkclear.yml metadata/app.linkclear.yml
