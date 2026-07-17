@@ -1,0 +1,255 @@
+<title>Link Clear — Pre-Release Audit</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --panel: #ffffff;
+    --panel-2: #eef0f4;
+    --ink: #1a1d24;
+    --ink-2: #4b5563;
+    --ink-3: #6b7280;
+    --line: #dfe3ea;
+    --accent: #3b6ea5;
+    --accent-soft: #e5eef7;
+    --crit: #c0392b;
+    --high: #d97706;
+    --med: #ca8a04;
+    --low: #2563eb;
+    --pass: #1f9d5c;
+    --pass-soft: #e2f4ea;
+    --shadow: 0 1px 2px rgba(20,28,45,.06), 0 4px 16px rgba(20,28,45,.05);
+    --mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1117; --panel: #161a22; --panel-2: #1c212c; --ink: #eef1f6;
+      --ink-2: #b3bccb; --ink-3: #7e8a9c; --line: #262c38; --accent: #6ea3d8;
+      --accent-soft: #1a2634; --crit: #e0685c; --high: #eab464; --med: #e3c65a;
+      --low: #6ea3f0; --pass: #4cc98a; --pass-soft: #14261d;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f8fa; --panel: #ffffff; --panel-2: #eef0f4; --ink: #1a1d24;
+    --ink-2: #4b5563; --ink-3: #6b7280; --line: #dfe3ea; --accent: #3b6ea5;
+    --accent-soft: #e5eef7; --crit: #c0392b; --high: #d97706; --med: #ca8a04;
+    --low: #2563eb; --pass: #1f9d5c; --pass-soft: #e2f4ea;
+    --shadow: 0 1px 2px rgba(20,28,45,.06), 0 4px 16px rgba(20,28,45,.05);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1117; --panel: #161a22; --panel-2: #1c212c; --ink: #eef1f6;
+    --ink-2: #b3bccb; --ink-3: #7e8a9c; --line: #262c38; --accent: #6ea3d8;
+    --accent-soft: #1a2634; --crit: #e0685c; --high: #eab464; --med: #e3c65a;
+    --low: #6ea3f0; --pass: #4cc98a; --pass-soft: #14261d;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 20px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 72px; }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 10px;
+  }
+  h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 600; margin: 0 0 6px; letter-spacing: -.02em; text-wrap: balance; }
+  .sub { color: var(--ink-2); font-size: 15px; margin: 0; }
+  .sub code { font-family: var(--mono); font-size: 13px; background: var(--panel-2); padding: 1px 6px; border-radius: 4px; }
+
+  /* Verdict banner */
+  .verdict {
+    margin: 28px 0 36px; border-radius: 14px; padding: 26px 28px;
+    background: linear-gradient(120deg, var(--pass-soft), var(--panel));
+    border: 1px solid var(--line); box-shadow: var(--shadow);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 22px;
+    border-left: 6px solid var(--pass);
+  }
+  .verdict .badge {
+    font-family: var(--mono); font-weight: 600; font-size: 30px; letter-spacing: .02em;
+    color: var(--pass); display: flex; align-items: center; gap: 12px; white-space: nowrap;
+  }
+  .verdict .badge .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--pass); box-shadow: 0 0 0 5px color-mix(in srgb, var(--pass) 22%, transparent); }
+  .verdict .vtext { flex: 1 1 340px; min-width: 260px; color: var(--ink-2); font-size: 14.5px; }
+  .verdict .vtext strong { color: var(--ink); font-weight: 600; }
+
+  /* KPI row */
+  .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 40px; }
+  @media (max-width: 720px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 420px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 14px 12px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sev); }
+  .kpi .n { font-family: var(--mono); font-size: 30px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; color: var(--sev); }
+  .kpi .l { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin-top: 8px; }
+  .kpi.crit { --sev: var(--crit); } .kpi.high { --sev: var(--high); }
+  .kpi.med { --sev: var(--med); } .kpi.low { --sev: var(--low); }
+  .kpi.pass { --sev: var(--pass); } .kpi.info { --sev: var(--ink-3); }
+
+  h2 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+       font-weight: 600; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  section { margin-bottom: 44px; }
+
+  /* Gate grid */
+  .gates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .gates { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 460px) { .gates { grid-template-columns: 1fr; } }
+  .gate {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px;
+  }
+  .gate .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .gate .name { font-weight: 600; font-size: 14.5px; }
+  .gate .desc { font-size: 12.5px; color: var(--ink-2); }
+  .chip {
+    font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+  }
+  .chip.ok { color: var(--pass); background: var(--pass-soft); }
+  .chip.warn { color: var(--high); background: color-mix(in srgb, var(--high) 15%, transparent); }
+
+  /* Findings */
+  .find { background: var(--panel); border: 1px solid var(--line); border-left: 5px solid var(--sev);
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); }
+  .find.high { --sev: var(--high); } .find.med { --sev: var(--med); } .find.low { --sev: var(--low); } .find.crit { --sev: var(--crit); }
+  .find .fhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 5px; }
+  .sev-tag { font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--sev); border: 1px solid var(--sev); border-radius: 4px; padding: 1px 7px; }
+  .find .area { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+  .find .ftitle { font-weight: 600; font-size: 14.5px; }
+  .find .fbody { font-size: 13.5px; color: var(--ink-2); }
+  .find .floc { font-family: var(--mono); font-size: 12px; color: var(--accent); background: var(--accent-soft);
+    padding: 1px 6px; border-radius: 4px; display: inline-block; margin-top: 6px; word-break: break-all; }
+
+  /* Checklist */
+  .phase { margin-bottom: 22px; }
+  .phase h3 { font-size: 13px; margin: 0 0 10px; display: flex; align-items: center; gap: 10px; }
+  .phase h3 .tag { font-family: var(--mono); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 5px; }
+  .p0 .tag { background: color-mix(in srgb, var(--crit) 15%, transparent); color: var(--crit); }
+  .p1 .tag { background: color-mix(in srgb, var(--high) 15%, transparent); color: var(--high); }
+  .p2 .tag { background: var(--panel-2); color: var(--ink-3); }
+  ul.checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  ul.checks li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; color: var(--ink); }
+  ul.checks li::before { content: "☐"; color: var(--ink-3); font-family: var(--mono); }
+  ul.checks li code { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+
+  .foot { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .foot .g { display: flex; align-items: center; gap: 6px; }
+  .foot .g b { color: var(--pass); font-weight: 600; }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Open-source audit &amp; hardening · 2026-07-17</p>
+  <h1>Link Clear — Audit &amp; Hardening</h1>
+  <p class="sub"><code>app.linkclear</code> · repo <code>github.com/kisst/link-clear</code> — <strong>already public</strong> (verified via gh) · 6 specialist sub-agents, read-only</p>
+
+  <div class="verdict">
+    <div class="badge"><span class="dot"></span>SAFE</div>
+    <div class="vtext">
+      <strong>Public is fine to keep — hardening applied.</strong> Zero CRITICAL findings, no
+      currently-exposed secrets. History clean, signing key uncompromised, license valid FOSS, no
+      trackers / GMS / blobs. Both HIGH items are now closed: the wrapper SHA is pinned, and the
+      transitive CVE scan ran (39 CVEs, <em>all build/test tooling, zero shipped</em>). Fixes
+      committed to <code>audit/pre-release-hardening</code>, not pushed.
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi crit"><div class="n">0</div><div class="l">Critical</div></div>
+    <div class="kpi high"><div class="n">2→0</div><div class="l">High (both fixed)</div></div>
+    <div class="kpi med"><div class="n">3/4</div><div class="l">Medium fixed</div></div>
+    <div class="kpi pass"><div class="n">0</div><div class="l">CVEs shipped</div></div>
+    <div class="kpi pass"><div class="n">6/6</div><div class="l">F-Droid gates</div></div>
+    <div class="kpi info"><div class="n">6</div><div class="l">Fix commits</div></div>
+  </div>
+
+  <section>
+    <h2>Area verdicts</h2>
+    <div class="gates">
+      <div class="gate"><div class="top"><span class="name">Secrets &amp; history</span><span class="chip ok">CLEAN</span></div><div class="desc">No secret ever committed across 9 commits. Key not compromised. No rewrite, no rotation. Sole gitleaks hit is the public cert fingerprint.</div></div>
+      <div class="gate"><div class="top"><span class="name">F-Droid compliance</span><span class="chip ok">6/6 PASS</span></div><div class="desc">License, no-GMS, no-trackers, no-blobs, fastlane metadata, reproducible (Path 1) all pass. No anti-features expected.</div></div>
+      <div class="gate"><div class="top"><span class="name">Android security</span><span class="chip ok">MINIMAL</span></div><div class="desc">No Device-Owner, no VPN — just INTERNET. 3 exported components, all guarded or benign. No history persisted.</div></div>
+      <div class="gate"><div class="top"><span class="name">Supply chain</span><span class="chip warn">1 HIGH</span></div><div class="desc">All deps FOSS &amp; GPL-compatible, nothing phones home. Missing wrapper SHA pin; transitive scan needs a JDK.</div></div>
+      <div class="gate"><div class="top"><span class="name">Release hygiene</span><span class="chip ok">SOUND</span></div><div class="desc">R8 + resource shrink on, no backdoors, no tracked artifacts, env-driven signing. versionCode &amp; allowBackup to address.</div></div>
+      <div class="gate"><div class="top"><span class="name">Docs &amp; licensing</span><span class="chip ok">DRAFTED</span></div><div class="desc">GPL-3.0-only, original icons. SECURITY.md, PRIVACY.md, build section &amp; attribution drafted — uncommitted.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Findings &amp; what was done</h2>
+
+    <div class="find pass"><div class="fhead"><span class="sev-tag">Fixed</span><span class="area">supply-chain · B1 · HIGH</span></div>
+      <div class="ftitle">Gradle wrapper had no distribution checksum</div>
+      <div class="fbody">Distribution was fetched over HTTPS but not hash-verified. <strong>Fixed:</strong> pinned <code>distributionSha256Sum</code> (verified against gradle.org); committed wrapper.jar also verified == upstream 8.14.4.</div>
+      <span class="floc">gradle/wrapper/gradle-wrapper.properties ✓ committed</span></div>
+
+    <div class="find pass"><div class="fhead"><span class="sev-tag">Resolved</span><span class="area">supply-chain · B2 · HIGH</span></div>
+      <div class="ftitle">Transitive CVE tree — now scanned &amp; clean of shipping CVEs</div>
+      <div class="fbody">Scanned via the project's Nix toolchain + osv-scanner (324 artifacts). <strong>39 CVEs, all in build/test tooling</strong> (AGP Unified Test Platform: netty/grpc/protobuf/commons-io; ktlint: logback). <strong>Zero reach the app's release classpath.</strong> A ktlint/detekt bump clears none (verified) — accepted as non-shipping; osv-scanner added to CI (warn-only).</div>
+      <span class="floc">0 vulnerable artifacts in releaseRuntimeClasspath ✓</span></div>
+
+    <div class="find pass"><div class="fhead"><span class="sev-tag">Fixed</span><span class="area">android-security · M1 · MED</span></div>
+      <div class="ftitle">allowBackup denylist was fragile</div>
+      <div class="fbody"><strong>Fixed:</strong> converted both backup configs to a fail-safe allowlist — nothing is backed up unless explicitly included (currently empty). Resources verified to compile.</div>
+      <span class="floc">app/src/main/res/xml/*backup*.xml ✓ committed</span></div>
+
+    <div class="find pass"><div class="fhead"><span class="sev-tag">Fixed</span><span class="area">release-hygiene · M2 · MED</span></div>
+      <div class="ftitle">No versionCode increment strategy</div>
+      <div class="fbody"><strong>Fixed:</strong> <code>versionCode</code>/<code>versionName</code> now derived from the git tag (monotonic for F-Droid). Both tag and dev-fallback paths verified to build.</div>
+      <span class="floc">app/build.gradle.kts ✓ committed</span></div>
+
+    <div class="find pass"><div class="fhead"><span class="sev-tag">Fixed</span><span class="area">supply-chain · M3 · MED</span></div>
+      <div class="ftitle">Two unused test dependencies</div>
+      <div class="fbody"><strong>Fixed:</strong> removed <code>androidx.test:core</code> and <code>espresso-core</code> (kept the used runner's version ref). Config resolves clean.</div>
+      <span class="floc">gradle/libs.versions.toml ✓ committed</span></div>
+
+    <div class="find low"><div class="fhead"><span class="sev-tag">Open</span><span class="area">tooling · M4 · LOW</span></div>
+      <div class="ftitle">trufflehog verified-secrets pass not run</div>
+      <div class="fbody">Low priority — gitleaks over full history was already clean. Run when convenient.</div>
+      <span class="floc">install trufflehog → git file://. --results=verified,unknown</span></div>
+  </section>
+
+  <section>
+    <h2>Remediation status</h2>
+
+    <div class="phase p0"><h3><span class="tag">Done</span> Committed to audit/pre-release-hardening (not pushed)</h3>
+      <ul class="checks">
+        <li><strong>B1</strong> — pinned Gradle <code>distributionSha256Sum</code> (verified against gradle.org)</li>
+        <li><strong>M1</strong> — backup configs converted to a fail-safe allowlist</li>
+        <li><strong>M2</strong> — version derived from git tag (monotonic <code>versionCode</code>)</li>
+        <li><strong>M3</strong> — removed unused test deps</li>
+        <li><strong>B2 / CVEs</strong> — transitive scan run; osv-scanner added to CI (warn-only)</li>
+      </ul>
+    </div>
+
+    <div class="phase p1"><h3><span class="tag">Open</span> Your decision — low priority</h3>
+      <ul class="checks">
+        <li>Install trufflehog; run the verified-secrets pass (gitleaks already clean)</li>
+        <li>Add <code>keystore.properties</code>, <code>.env</code>, <code>*.p12</code> to <code>.gitignore</code></li>
+        <li>Confirm SPDX intent — <code>GPL-3.0-only</code> recommended, consistently</li>
+        <li>Finalize 4 doc drafts; confirm GitHub private vuln reporting is enabled</li>
+      </ul>
+    </div>
+
+    <div class="phase p2"><h3><span class="tag">Skipped</span> Deliberately not done</h3>
+      <ul class="checks">
+        <li>ktlint/detekt bump "to clear CVEs" — verified it clears none; would be a false rationale</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span class="g"><b>✓</b> audit read-only</span>
+    <span class="g"><b>✓</b> no secret printed</span>
+    <span class="g"><b>✓</b> history untouched</span>
+    <span class="g"><b>✓</b> nothing pushed</span>
+    <span class="g"><b>✓</b> fixes on a branch, approved per-item</span>
+    <span class="g" style="color:var(--ink-3)">Full detail in PRE_RELEASE_AUDIT.md</span>
+  </div>
+</div>
