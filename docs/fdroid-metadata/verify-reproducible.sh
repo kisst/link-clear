@@ -47,14 +47,34 @@ def parts(data):
     cd = struct.unpack('<I', data[eocd+16:eocd+20])[0]
     if data[cd-16:cd] == MAGIC:
         size = struct.unpack('<Q', data[cd-24:cd-16])[0]
-        return data[:cd-size-8], data[cd:eocd]        # entries, central-dir
-    return data[:cd], data[cd:eocd]
-pe, pcd = parts(open(sys.argv[1],'rb').read())
-le, lcd = parts(open(sys.argv[2],'rb').read())
+        return data[:cd-size-8], data[cd:eocd], data[cd-size-8:cd]  # entries, cd, sigblock
+    return data[:cd], data[cd:eocd], b''
+
+# F-Droid rejects any signing-block ID other than the signature/padding blocks —
+# in particular AGP's "dependency metadata" (0x504b4453). Flag it here so we catch
+# it locally instead of only at F-Droid's `check apk`.
+ALLOWED = {0x7109871a: 'v2', 0xf05368c0: 'v3', 0x42726577: 'padding', 0xf3691f37: 'source-stamp'}
+def blocks(sigblock):
+    if not sigblock:
+        return []
+    p, out = 8, []
+    while p < len(sigblock) - 24:
+        ln = struct.unpack('<Q', sigblock[p:p+8])[0]
+        out.append(struct.unpack('<I', sigblock[p+8:p+12])[0])
+        p += 8 + ln
+    return out
+
+pe, pcd, psig = parts(open(sys.argv[1],'rb').read())
+le, lcd, _    = parts(open(sys.argv[2],'rb').read())
 ok = (pe == le) and (pcd == lcd)
+extra = [hex(b) for b in blocks(psig) if b not in ALLOWED]
 print("  entries-region SHA256:", hashlib.sha256(pe).hexdigest(), "(published)")
 print("  entries-region SHA256:", hashlib.sha256(le).hexdigest(), "(rebuilt)  ")
 print("  central-directory identical:", pcd == lcd)
+print("  published signing blocks:", [ALLOWED.get(b, hex(b)) for b in blocks(psig)])
+if extra:
+    print("  ⚠ EXTRA signing block(s) F-Droid will reject:", extra)
+    ok = False
 print("  RESULT:", "REPRODUCIBLE ✓" if ok else "NOT reproducible ✗")
 sys.exit(0 if ok else 1)
 PY
