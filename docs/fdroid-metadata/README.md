@@ -12,17 +12,20 @@ follow-up), see [../fdroid-submission.md](../fdroid-submission.md).
 ## What this recipe does
 
 - Builds **from source** on F-Droid's server (Path 1): F-Droid compiles the
-  `:app` module at tag `v1.0.0` and signs the APK with its own key. The app's
+  `:app` module at tag `v1.0.1` and signs the APK with its own key. The app's
   signing config leaves the release **unsigned** when the `LINKCLEAR_*` env
   vars are absent (`app/build.gradle.kts`), which is exactly what F-Droid needs.
-- `commit: v1.0.0` pins the first build to the existing release tag
-  (remote tag `v1.0.0` -> commit `e040b88`).
-- `AutoUpdateMode: Version v%v.0` bridges the versionName/tag mismatch: `%v`
-  expands to the versionName `1.0`, and the trailing `.0` reconstructs the
-  `v1.0.0` tag. Once versionName and tags agree (e.g. `versionName = "1.0.0"`),
-  simplify this to `Version v%v`.
+- `commit: v1.0.1` pins the first build to the release tag. The app version is
+  derived entirely from that tag (`app/build.gradle.kts`): `versionName` is the
+  tag minus the leading `v` (`1.0.1`), and `versionCode` is
+  `MAJOR*10000 + MINOR*100 + PATCH` (`10001`), so it stays monotonic across
+  releases as F-Droid requires.
+- `AutoUpdateMode: Version v%v` — the tag and `versionName` now agree
+  (`v1.0.1` <-> `1.0.1`), so `%v` alone reconstructs the tag; no `.0` bridge is
+  needed.
 - `UpdateCheckMode: Tags` watches the repo's git tags for future releases.
-  Remember to bump `versionCode` on every new tag or AutoUpdate skips it.
+  Because versionCode is derived from the tag, every new `vX.Y.Z` tag bumps it
+  automatically — no manual edit needed.
 
 The **store listing** (title, descriptions, screenshots, icon) is NOT in this
 file — F-Droid reads it from the Fastlane tree at `fastlane/metadata/android/`
@@ -100,9 +103,9 @@ one key, add these to the recipe once the from-source build is green (see
 [../fdroid-submission.md](../fdroid-submission.md) for the caveats):
 
 ```yaml
-Binaries: https://github.com/kisst/link-clear/releases/download/v%v.0/link-clear-v%v.0.apk
+Binaries: https://github.com/kisst/link-clear/releases/download/v%v/link-clear-v%v.apk
 AllowedAPKSigningKeys: 7e489f6b0342db48ebcdb30312965e840589f1a335438046aefc2dfc548d057e
 ```
 
 The `AllowedAPKSigningKeys` value is this project's release signing-cert SHA-256
-(verified against the published v1.0.0 APK).
+(verified against the published v1.0.0 APK; the key is unchanged for v1.0.1).
