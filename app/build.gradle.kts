@@ -3,30 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
-// Single source of truth for the app version: the git tag (vMAJOR.MINOR.PATCH).
-// versionName is the tag without the leading "v"; versionCode is derived as
-// MAJOR*10000 + MINOR*100 + PATCH so it is monotonic across releases (required
-// by F-Droid). Dev builds with no matching tag fall back to 0.0.0 / code 1 so
-// the working tree always builds. F-Droid builds from the tag, so it always
-// resolves a real version.
-val gitVersionName: String =
-    providers.exec {
-        commandLine("git", "describe", "--tags", "--match", "v[0-9]*", "--abbrev=0")
-        // Tolerate a repo with no matching tag (dev builds): don't fail the build.
-        isIgnoreExitValue = true
-    }.standardOutput.asText.map { it.trim().removePrefix("v") }
-        .orElse("").get().ifBlank { "0.0.0" }
-
-val gitVersionCode: Int =
-    gitVersionName.split("-").first().split(".")
-        .mapNotNull { it.toIntOrNull() }
-        .let { parts ->
-            val major = parts.getOrElse(0) { 0 }
-            val minor = parts.getOrElse(1) { 0 }
-            val patch = parts.getOrElse(2) { 0 }
-            (major * 10_000 + minor * 100 + patch).coerceAtLeast(1)
-        }
-
+// The app version below is release-managed: it is written by ./release.sh, which
+// then commits and tags, so the git tag stays the source of truth. The values
+// are kept as inline literals (versionCode a bare integer, versionName a quoted
+// string) because F-Droid's checkupdates parses this file statically with a
+// regex and cannot run git or Gradle. Do not hand-edit; run ./release.sh <ver>.
+// versionCode = MAJOR*10000 + MINOR*100 + PATCH, monotonic as F-Droid requires.
 android {
     namespace = "app.linkclear"
     compileSdk = 35
@@ -34,8 +16,8 @@ android {
         applicationId = "app.linkclear"
         minSdk = 26
         targetSdk = 35
-        versionCode = gitVersionCode
-        versionName = gitVersionName
+        versionCode = 10002
+        versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }
