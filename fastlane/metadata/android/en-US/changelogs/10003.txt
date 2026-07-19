@@ -1,0 +1,6 @@
+Packaging fix for F-Droid reproducible builds.
+
+* Exclude the AGP dependency-metadata block from the signed APK, which F-Droid
+  requires for its reproducible cross-signing.
+
+App behaviour is unchanged from 1.0.1.
