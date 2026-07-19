@@ -39,15 +39,34 @@ them without an uninstall/reinstall.
   Because versionCode is derived from the tag, every new `vX.Y.Z` tag bumps it
   automatically — no manual edit needed.
 
-### Reproducibility is the risk to expect
+### Reproducibility — verified locally, not assumed
 
 Path 2 only succeeds if F-Droid's from-source rebuild is byte-identical to the
-published APK before signing. The release build enables R8
-(`isMinifyEnabled` + `isShrinkResources`, `app/build.gradle.kts`), whose output
-is not guaranteed reproducible across environments, and the v2 signature covers
-all APK bytes. Expect the F-Droid CI `fdroid build` to need one or more rounds of
-adjustment (pinning toolchain versions, and possibly relaxing R8) before it
-reproduces. This is normal for Path 2 and is worked out in the MR thread.
+published APK before signing. This has been **verified for `v1.0.1`**: a fresh
+`git clone` + `git checkout v1.0.1` built unsigned with the repo toolchain
+(OpenJDK 17.0.20, Gradle 8.14.4, AGP 8.6.1, build-tools 35.0.0) is byte-for-byte
+identical to the published `link-clear-v1.0.1.apk` across the entire ZIP
+entries region (SHA-256 `af24b287…d22f4`) and central directory. The only
+difference is the 8192-byte v2 APK Signing Block — exactly the region F-Droid
+strips and reattaches the developer signature to.
+
+R8 (`isMinifyEnabled` + `isShrinkResources`) produced deterministic output here,
+which is the historically risky part; the check confirms it is stable.
+
+Reproduce the check yourself:
+
+```sh
+source .superpowers/sdd/buildenv.sh   # JDK 17 + Android SDK on PATH
+docs/fdroid-metadata/verify-reproducible.sh v1.0.1
+```
+
+**Caveat:** the build MUST run from a real git checkout at the tag, not a
+`git archive` export — the app version and the embedded
+`META-INF/version-control-info.textproto` are derived from git, so a checkout
+without `.git` falls back to version `0.0.0`/code `1` and reports false diffs.
+If F-Droid's build server uses a materially different AGP/build-tools bundle,
+minor re-pinning in the recipe may still be needed; the local proof makes that
+unlikely.
 
 The **store listing** (title, descriptions, screenshots, icon) is NOT in this
 file — F-Droid reads it from the Fastlane tree at `fastlane/metadata/android/`
