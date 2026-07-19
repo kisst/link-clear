@@ -34,7 +34,7 @@ MaintainerNotes: |-
   version and META-INF/version-control-info.textproto are git-derived. Verify:
   docs/fdroid-metadata/verify-reproducible.sh v1.0.1
 
-AutoUpdateMode: Version v%v
+AutoUpdateMode: Version
 UpdateCheckMode: Tags
 CurrentVersion: 1.0.1
 CurrentVersionCode: 10001

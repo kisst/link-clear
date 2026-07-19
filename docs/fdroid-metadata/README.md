@@ -33,8 +33,11 @@ them without an uninstall/reinstall.
   `apksigner verify --print-certs` (the APK is signed with the v2 scheme only).
   F-Droid will only publish the developer signature if the rebuilt APK matches
   and carries this key.
-- `AutoUpdateMode: Version v%v` — the tag and `versionName` agree
-  (`v1.0.1` <-> `1.0.1`), so `%v` alone reconstructs the tag.
+- `AutoUpdateMode: Version` — because the tag and `versionName` agree
+  (`v1.0.1` <-> `1.0.1`), F-Droid auto-detects the tag pattern with no template
+  needed. (A literal `Version v%v` is rejected by F-Droid's `check-jsonschema`
+  step, whose `AutoUpdateMode` pattern only allows an optional `+`-prefixed
+  suffix — bare `Version` is the correct value here.)
 - `UpdateCheckMode: Tags` watches the repo's git tags for future releases.
   Because versionCode is derived from the tag, every new `vX.Y.Z` tag bumps it
   automatically — no manual edit needed.
