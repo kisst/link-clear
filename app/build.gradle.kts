@@ -20,6 +20,16 @@ android {
         versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    // Do not embed the AGP "dependency metadata" block in the APK signing block.
+    // It is a Play-Store feature Link Clear does not use, and F-Droid rejects any
+    // extra block in the signing section ("Found extra signing block 'Dependency
+    // metadata'"), which would break the reproducible/cross-signed (Path 2) build.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     buildFeatures { compose = true }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
