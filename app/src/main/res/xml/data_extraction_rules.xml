@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Android 12+ backup/transfer rules. Backup stays enabled for the app, but the
-  settings DataStore is excluded from both cloud backup and device-to-device
-  transfer: its custom_resolver_url field may hold a user's resolver API key,
-  which should not leave the device. Everything else is eligible for backup.
+  Android 12+ backup/transfer rules. Backup stays enabled (allowBackup="true"),
+  but we use an ALLOWLIST, not a denylist: nothing is backed up or transferred
+  unless explicitly included here. This is fail-safe — a new preference or file
+  added later cannot leak into cloud backup / device transfer by default.
+
+  The app's only persisted state is the settings DataStore, whose
+  custom_resolver_url field may hold a user's resolver API key; it must never
+  leave the device, so it is deliberately NOT included. There is currently no
+  data worth backing up (rules re-download; settings are trivial), so the
+  allowlist is intentionally empty. Add an <include> only for data that is
+  confirmed safe to back up.
 -->
 <data-extraction-rules>
-    <cloud-backup>
-        <exclude
-            domain="file"
-            path="datastore/settings.preferences_pb" />
-    </cloud-backup>
-    <device-transfer>
-        <exclude
-            domain="file"
-            path="datastore/settings.preferences_pb" />
-    </device-transfer>
+    <cloud-backup />
+    <device-transfer />
 </data-extraction-rules>

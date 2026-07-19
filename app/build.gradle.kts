@@ -2,6 +2,31 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
+
+// Single source of truth for the app version: the git tag (vMAJOR.MINOR.PATCH).
+// versionName is the tag without the leading "v"; versionCode is derived as
+// MAJOR*10000 + MINOR*100 + PATCH so it is monotonic across releases (required
+// by F-Droid). Dev builds with no matching tag fall back to 0.0.0 / code 1 so
+// the working tree always builds. F-Droid builds from the tag, so it always
+// resolves a real version.
+val gitVersionName: String =
+    providers.exec {
+        commandLine("git", "describe", "--tags", "--match", "v[0-9]*", "--abbrev=0")
+        // Tolerate a repo with no matching tag (dev builds): don't fail the build.
+        isIgnoreExitValue = true
+    }.standardOutput.asText.map { it.trim().removePrefix("v") }
+        .orElse("").get().ifBlank { "0.0.0" }
+
+val gitVersionCode: Int =
+    gitVersionName.split("-").first().split(".")
+        .mapNotNull { it.toIntOrNull() }
+        .let { parts ->
+            val major = parts.getOrElse(0) { 0 }
+            val minor = parts.getOrElse(1) { 0 }
+            val patch = parts.getOrElse(2) { 0 }
+            (major * 10_000 + minor * 100 + patch).coerceAtLeast(1)
+        }
+
 android {
     namespace = "app.linkclear"
     compileSdk = 35
@@ -9,8 +34,8 @@ android {
         applicationId = "app.linkclear"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = gitVersionCode
+        versionName = gitVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures { compose = true }

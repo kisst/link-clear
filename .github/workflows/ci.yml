@@ -25,3 +25,49 @@ jobs:
 
       - name: Lint and test
         run: ./gradlew ktlintCheck detekt test lint --stacktrace
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    # Warn-only: surfaces new dependency CVEs without blocking the build. The
+    # current findings are confined to build/test tooling (AGP's Unified Test
+    # Platform, ktlint's transitive logback) and never reach the shipped APK.
+    # Flip to blocking once shipping-scope filtering / suppressions are in place.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Resolve dependency graph
+        run: |
+          ./gradlew -q :app:dependencies :core:dependencies :unshorten:dependencies \
+            > deps.txt 2>&1 || true
+          {
+            echo '<project xmlns="http://maven.apache.org/POM/4.0.0">'
+            echo '<modelVersion>4.0.0</modelVersion>'
+            echo '<groupId>audit</groupId><artifactId>closure</artifactId><version>1</version>'
+            echo '<dependencies>'
+            sed -E 's/^[ |+\`-]*//' deps.txt \
+              | grep -E '^[a-zA-Z0-9_.-]+:[a-zA-Z0-9_.-]+:' \
+              | sed -E 's/ \((\*|c|n)\)$//' \
+              | sed -E 's/^([^ ]+):([^ ]+):([^ ]+) -> (.+)$/\1:\2:\4/' \
+              | awk -F: 'NF>=3 && $3 ~ /^[0-9]/ {print $1":"$2":"$3}' \
+              | sort -u \
+              | while IFS=: read -r g a v; do
+                  printf '<dependency><groupId>%s</groupId><artifactId>%s</artifactId><version>%s</version></dependency>\n' "$g" "$a" "$v"
+                done
+            echo '</dependencies></project>'
+          } > pom.xml
+
+      - name: Scan for known vulnerabilities (OSV)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
+        with:
+          scan-args: |-
+            --lockfile=pom.xml:pom.xml
