@@ -18,38 +18,39 @@ signature onto it and publishes that. This way Obtainium users (who installed
 the GitHub APK) and F-Droid users share one signing key, so updates flow between
 them without an uninstall/reinstall.
 
-- `commit: v1.0.1` pins the build to the release tag. The app version is derived
-  entirely from that tag (`app/build.gradle.kts`): `versionName` is the tag
-  minus the leading `v` (`1.0.1`), and `versionCode` is
-  `MAJOR*10000 + MINOR*100 + PATCH` (`10001`), so it stays monotonic across
-  releases as F-Droid requires.
+- `commit: v1.0.2` pins the build to the release tag. The app version lives as
+  inline literals in `app/build.gradle.kts` (`versionCode = 10002`,
+  `versionName = "1.0.2"`), written by `release.sh` at release time. They are
+  literals, not computed, so F-Droid's static `checkupdates` can read them;
+  versionCode follows `MAJOR*10000 + MINOR*100 + PATCH`, monotonic as F-Droid
+  requires.
 - `Binaries: .../releases/download/v%v/link-clear-v%v.apk` points F-Droid at the
   developer-published APK to reproduce. `%v` expands to the versionName, which
-  equals the tag (`v1.0.1`), so it resolves to
-  `link-clear-v1.0.1.apk` — the exact asset the release workflow uploads.
+  equals the tag (`v1.0.2`), so it resolves to
+  `link-clear-v1.0.2.apk` — the exact asset the release workflow uploads.
 - `AllowedAPKSigningKeys: 7e489f6b…057e` is the SHA-256 of this project's release
   signing certificate. **Verified against the actual published
-  `link-clear-v1.0.1.apk`** with
+  `link-clear-v1.0.2.apk`** with
   `apksigner verify --print-certs` (the APK is signed with the v2 scheme only).
   F-Droid will only publish the developer signature if the rebuilt APK matches
   and carries this key.
 - `AutoUpdateMode: Version` — because the tag and `versionName` agree
-  (`v1.0.1` <-> `1.0.1`), F-Droid auto-detects the tag pattern with no template
+  (`v1.0.2` <-> `1.0.2`), F-Droid auto-detects the tag pattern with no template
   needed. (A literal `Version v%v` is rejected by F-Droid's `check-jsonschema`
   step, whose `AutoUpdateMode` pattern only allows an optional `+`-prefixed
   suffix — bare `Version` is the correct value here.)
-- `UpdateCheckMode: Tags` watches the repo's git tags for future releases.
-  Because versionCode is derived from the tag, every new `vX.Y.Z` tag bumps it
-  automatically — no manual edit needed.
+- `UpdateCheckMode: Tags` watches the repo's git tags for future releases. Each
+  release bumps the inline literals via `release.sh`, so `checkupdates` sees the
+  new versionCode and auto-updates.
 
 ### Reproducibility — verified locally, not assumed
 
 Path 2 only succeeds if F-Droid's from-source rebuild is byte-identical to the
-published APK before signing. This has been **verified for `v1.0.1`**: a fresh
-`git clone` + `git checkout v1.0.1` built unsigned with the repo toolchain
+published APK before signing. This has been **verified for `v1.0.2`**: a fresh
+`git clone` + `git checkout v1.0.2` built unsigned with the repo toolchain
 (OpenJDK 17.0.20, Gradle 8.14.4, AGP 8.6.1, build-tools 35.0.0) is byte-for-byte
-identical to the published `link-clear-v1.0.1.apk` across the entire ZIP
-entries region (SHA-256 `af24b287…d22f4`) and central directory. The only
+identical to the published `link-clear-v1.0.2.apk` across the entire ZIP
+entries region (SHA-256 `c6236e79…a78a`) and central directory. The only
 difference is the 8192-byte v2 APK Signing Block — exactly the region F-Droid
 strips and reattaches the developer signature to.
 
@@ -60,13 +61,14 @@ Reproduce the check yourself:
 
 ```sh
 source .superpowers/sdd/buildenv.sh   # JDK 17 + Android SDK on PATH
-docs/fdroid-metadata/verify-reproducible.sh v1.0.1
+docs/fdroid-metadata/verify-reproducible.sh v1.0.2
 ```
 
-**Caveat:** the build MUST run from a real git checkout at the tag, not a
-`git archive` export — the app version and the embedded
-`META-INF/version-control-info.textproto` are derived from git, so a checkout
-without `.git` falls back to version `0.0.0`/code `1` and reports false diffs.
+**Caveat:** the build should run from a real git checkout at the tag, not a
+`git archive` export — the embedded
+`META-INF/version-control-info.textproto` records the git revision, so a
+checkout without `.git` reports a false diff on that one entry. (The app version
+itself is now a static literal, so it no longer depends on git.)
 If F-Droid's build server uses a materially different AGP/build-tools bundle,
 minor re-pinning in the recipe may still be needed; the local proof makes that
 unlikely.
@@ -86,7 +88,7 @@ clone (its `config/categories.yml` is needed for category validation):
   canonical form (`Binaries` after `Repo`, `AllowedAPKSigningKeys` after the
   `Builds` block), so it will not be rewritten.
 - `AllowedAPKSigningKeys` was verified against the published
-  `link-clear-v1.0.1.apk` with `apksigner verify --print-certs`.
+  `link-clear-v1.0.2.apk` with `apksigner verify --print-certs`.
 
 Re-run these before the MR in case F-Droid's policy or category set has changed
 since. Install the tool with `pipx install fdroidserver` (or
@@ -140,7 +142,7 @@ fdroid build -v -l app.linkclear
      endpoints; the app works fully offline with the bundled ClearURLs data.
    - **Build note (Path 2 — reproducible/cross-signed):** F-Droid builds from
      source and verifies the result is byte-identical to the developer-published
-     `link-clear-v1.0.1.apk`, then publishes the developer signature
+     `link-clear-v1.0.2.apk`, then publishes the developer signature
      (`AllowedAPKSigningKeys`). Note that R8 minification may require a round or
      two of reproducibility fixes in CI.
 
