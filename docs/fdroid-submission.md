@@ -35,27 +35,29 @@ F-Droid can distribute an app in one of two ways
 
 ### Which path to pick for Link Clear
 
-**Start with Path 1 (F-Droid builds and signs).** Reasoning:
+**Go with Path 2 (reproducible builds — F-Droid verifies a developer-signed
+APK).** Reasoning:
 
-- It is the lowest-friction way to get accepted, and it is what the "F-Droid
-  first" decision in [ADR 0005](adr/0005-gpl3-and-fdroid-first.md) already
-  anticipates ("reproducible, source-built packages").
-- Link Clear's release signing is env-var driven and **falls back to unsigned
-  when the secrets are absent** (see `app/build.gradle.kts` lines 26-54). That
-  is exactly what Path 1 needs: F-Droid's build server has none of our secrets,
-  so `./gradlew :app:assembleRelease` produces an *unsigned* APK for F-Droid to
-  sign. No change required.
-- Path 2 additionally requires our GitHub-Actions build to be **byte-for-byte
-  reproducible** against F-Droid's build. R8/`isMinifyEnabled` +
-  `isShrinkResources` (build.gradle.kts lines 44-45) plus v2/v3 APK signing make
-  exact reproducibility hard to achieve first try
-  ([Reproducible Builds](https://f-droid.org/docs/Reproducible_Builds/) notes v2/v3
-  signatures cover *all* bytes in the APK). It is worth pursuing later so that
-  Obtainium users and F-Droid users share one signature, but it should not block
-  the initial submission.
+- The goal is that Obtainium users (who install the GitHub-Releases APK) and
+  F-Droid users **share one signing key**, so updates flow between the two
+  channels without an uninstall/reinstall. Only Path 2 delivers this; under
+  Path 1 F-Droid signs with its own key and the two installs diverge.
+- The signing key already exists and is used by the release workflow
+  (`.github/workflows/release.yml`), which builds and uploads a signed
+  `link-clear-v%v.apk` to each GitHub Release. Path 2 points F-Droid at that
+  published APK via `Binaries` and pins the certificate via
+  `AllowedAPKSigningKeys`.
+- The cost is that our GitHub-Actions build must be **byte-for-byte
+  reproducible** against F-Droid's from-source build. R8/`isMinifyEnabled` +
+  `isShrinkResources` (build.gradle.kts) plus the v2 APK signature (which covers
+  *all* bytes) make exact reproducibility unlikely on the first try
+  ([Reproducible Builds](https://f-droid.org/docs/Reproducible_Builds/)). We
+  accept iterating on this in the F-Droid CI / MR thread rather than falling back
+  to Path 1.
 
-Recommended sequence: ship on Path 1, then once it builds cleanly on F-Droid,
-add `Binaries` + `AllowedAPKSigningKeys` in a follow-up MR to move to Path 2.
+Recommended sequence: publish the signed APK to a GitHub Release, verify its
+signing-cert SHA-256 against `AllowedAPKSigningKeys`, then open the Path 2 MR and
+work through reproducibility with F-Droid CI.
 
 ## What is already satisfied vs. what must be added
 
@@ -286,9 +288,11 @@ available.
 
 7. **Open a merge request** against `fdroiddata` `master` on GitLab. In the
    description: confirm you are the upstream author (author consent), state that
-   no anti-features apply and why, and note that the app builds unsigned without
-   secrets (Path 1). CI runs `fdroid lint` and a build on the MR; fix anything
-   it flags, including pre-existing style nits `rewritemeta`/`lint` surface.
+   no anti-features apply and why, and note this is a **Path 2 (reproducible /
+   cross-signed)** submission — F-Droid verifies its build against the published
+   `link-clear-v%v.apk` and copies the developer signature. CI runs `fdroid lint`
+   and a reproducible `fdroid build`; fix anything it flags, including
+   reproducibility mismatches and pre-existing style nits.
 8. **Iterate on reviewer feedback** in the MR thread. Once merged, the app
    appears in the main repo within roughly 24-48 hours
    ([Inclusion How-To](https://f-droid.org/docs/Inclusion_How-To/)).
@@ -303,11 +307,15 @@ yourself via an MR is faster because it reduces reviewer burden
 
 ## Summary
 
-- Pick **Path 1** (F-Droid builds and signs). The repo is already compatible:
-  unsigned fallback, FOSS deps, GPL-3.0, tagged `v1.0.0`.
-- Add two things: **Fastlane store-listing metadata** upstream, and the
-  **`metadata/app.linkclear.yml`** recipe in an fdroiddata MR.
+- Pick **Path 2** (reproducible builds — F-Droid verifies the developer-signed
+  APK and republishes the developer signature) so F-Droid and Obtainium share
+  one signing key. The repo is compatible: FOSS deps, GPL-3.0, tagged `v1.0.1`
+  with a signed `link-clear-v1.0.1.apk` published to the GitHub Release.
+- Add two things: **Fastlane store-listing metadata** upstream (done), and the
+  **`metadata/app.linkclear.yml`** recipe (with `Binaries` +
+  `AllowedAPKSigningKeys`) in an fdroiddata MR.
 - Expect **no anti-feature flags**; the only network use is opt-in and
   self-hostable.
-- Consider aligning `versionName` and the git tag scheme, and later moving to
-  **Path 2** reproducible builds so F-Droid and Obtainium share one signature.
+- `versionName` and the git tag now agree (`1.0.1` <-> `v1.0.1`). The main risk
+  is **build reproducibility** (R8 + v2 signing); plan to iterate with F-Droid
+  CI before the build goes green.

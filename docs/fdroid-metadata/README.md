@@ -6,26 +6,48 @@ file [`app.linkclear.yml`](app.linkclear.yml) here is the exact content that
 goes into `metadata/app.linkclear.yml` **in the fdroiddata repo** — it does not
 belong in this app repo's build, it lives here only as the prepared artifact.
 
-For the background (which inclusion path, anti-features, reproducible-builds
-follow-up), see [../fdroid-submission.md](../fdroid-submission.md).
+For the background (which inclusion path, anti-features), see
+[../fdroid-submission.md](../fdroid-submission.md).
 
 ## What this recipe does
 
-- Builds **from source** on F-Droid's server (Path 1): F-Droid compiles the
-  `:app` module at tag `v1.0.1` and signs the APK with its own key. The app's
-  signing config leaves the release **unsigned** when the `LINKCLEAR_*` env
-  vars are absent (`app/build.gradle.kts`), which is exactly what F-Droid needs.
-- `commit: v1.0.1` pins the first build to the release tag. The app version is
-  derived entirely from that tag (`app/build.gradle.kts`): `versionName` is the
-  tag minus the leading `v` (`1.0.1`), and `versionCode` is
+This uses **Path 2 — reproducible builds / cross-signing**. F-Droid builds the
+app from source, verifies its unsigned build is byte-for-byte identical to the
+developer-published APK on GitHub Releases, then copies the **developer's**
+signature onto it and publishes that. This way Obtainium users (who installed
+the GitHub APK) and F-Droid users share one signing key, so updates flow between
+them without an uninstall/reinstall.
+
+- `commit: v1.0.1` pins the build to the release tag. The app version is derived
+  entirely from that tag (`app/build.gradle.kts`): `versionName` is the tag
+  minus the leading `v` (`1.0.1`), and `versionCode` is
   `MAJOR*10000 + MINOR*100 + PATCH` (`10001`), so it stays monotonic across
   releases as F-Droid requires.
-- `AutoUpdateMode: Version v%v` — the tag and `versionName` now agree
-  (`v1.0.1` <-> `1.0.1`), so `%v` alone reconstructs the tag; no `.0` bridge is
-  needed.
+- `Binaries: .../releases/download/v%v/link-clear-v%v.apk` points F-Droid at the
+  developer-published APK to reproduce. `%v` expands to the versionName, which
+  equals the tag (`v1.0.1`), so it resolves to
+  `link-clear-v1.0.1.apk` — the exact asset the release workflow uploads.
+- `AllowedAPKSigningKeys: 7e489f6b…057e` is the SHA-256 of this project's release
+  signing certificate. **Verified against the actual published
+  `link-clear-v1.0.1.apk`** with
+  `apksigner verify --print-certs` (the APK is signed with the v2 scheme only).
+  F-Droid will only publish the developer signature if the rebuilt APK matches
+  and carries this key.
+- `AutoUpdateMode: Version v%v` — the tag and `versionName` agree
+  (`v1.0.1` <-> `1.0.1`), so `%v` alone reconstructs the tag.
 - `UpdateCheckMode: Tags` watches the repo's git tags for future releases.
   Because versionCode is derived from the tag, every new `vX.Y.Z` tag bumps it
   automatically — no manual edit needed.
+
+### Reproducibility is the risk to expect
+
+Path 2 only succeeds if F-Droid's from-source rebuild is byte-identical to the
+published APK before signing. The release build enables R8
+(`isMinifyEnabled` + `isShrinkResources`, `app/build.gradle.kts`), whose output
+is not guaranteed reproducible across environments, and the v2 signature covers
+all APK bytes. Expect the F-Droid CI `fdroid build` to need one or more rounds of
+adjustment (pinning toolchain versions, and possibly relaxing R8) before it
+reproduces. This is normal for Path 2 and is worked out in the MR thread.
 
 The **store listing** (title, descriptions, screenshots, icon) is NOT in this
 file — F-Droid reads it from the Fastlane tree at `fastlane/metadata/android/`
@@ -38,8 +60,11 @@ clone (its `config/categories.yml` is needed for category validation):
 
 - `fdroid lint app.linkclear` -> **clean** (exit 0). `Internet` and `Security`
   are valid categories in the current F-Droid category set.
-- `fdroid rewritemeta app.linkclear` -> **clean**; the file here is already in
-  canonical form (single-quoted version strings), so it will not be rewritten.
+- `fdroid rewritemeta app.linkclear` -> **no diff**; the file here is already in
+  canonical form (`Binaries` after `Repo`, `AllowedAPKSigningKeys` after the
+  `Builds` block), so it will not be rewritten.
+- `AllowedAPKSigningKeys` was verified against the published
+  `link-clear-v1.0.1.apk` with `apksigner verify --print-certs`.
 
 Re-run these before the MR in case F-Droid's policy or category set has changed
 since. Install the tool with `pipx install fdroidserver` (or
@@ -91,21 +116,13 @@ fdroid build -v -l app.linkclear
    - **Anti-features:** none apply. The only network use (rules refresh,
      link unshortening) is opt-in, off by default, and hits public/self-hostable
      endpoints; the app works fully offline with the bundled ClearURLs data.
-   - **Build note:** builds unsigned without secrets (Path 1); F-Droid signs it.
+   - **Build note (Path 2 — reproducible/cross-signed):** F-Droid builds from
+     source and verifies the result is byte-identical to the developer-published
+     `link-clear-v1.0.1.apk`, then publishes the developer signature
+     (`AllowedAPKSigningKeys`). Note that R8 minification may require a round or
+     two of reproducibility fixes in CI.
 
-5. Address F-Droid CI feedback on the MR (it runs `fdroid lint` and a build).
-   Once merged, the app appears in the main repo within roughly 24-48 hours.
-
-### Reproducible-builds follow-up (later)
-
-To have F-Droid publish *your* signature so Obtainium and F-Droid users share
-one key, add these to the recipe once the from-source build is green (see
-[../fdroid-submission.md](../fdroid-submission.md) for the caveats):
-
-```yaml
-Binaries: https://github.com/kisst/link-clear/releases/download/v%v/link-clear-v%v.apk
-AllowedAPKSigningKeys: 7e489f6b0342db48ebcdb30312965e840589f1a335438046aefc2dfc548d057e
-```
-
-The `AllowedAPKSigningKeys` value is this project's release signing-cert SHA-256
-(verified against the published v1.0.0 APK; the key is unchanged for v1.0.1).
+5. Address F-Droid CI feedback on the MR (it runs `fdroid lint` and a
+   reproducible `fdroid build`). Expect reproducibility iteration (see
+   "Reproducibility is the risk to expect" above). Once merged, the app appears
+   in the main repo within roughly 24-48 hours.
