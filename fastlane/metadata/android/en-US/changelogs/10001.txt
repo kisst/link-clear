@@ -1,5 +1,0 @@
-First release.
-
-* Clean tracking parameters from URLs with the bundled ClearURLs ruleset.
-* Share target, Quick Settings tile, and in-app editor with before/after diff.
-* Offline by default; optional opt-in link unshortening and ruleset updates.

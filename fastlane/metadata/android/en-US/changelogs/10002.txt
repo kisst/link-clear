@@ -1,0 +1,7 @@
+Build and packaging fixes for F-Droid inclusion.
+
+* Compile :core without a provisioned JVM toolchain so the app builds on
+  F-Droid's reproducible-build server.
+* Set the app version as inline literals so F-Droid detects new releases.
+
+App behaviour is unchanged from 1.0.1.
