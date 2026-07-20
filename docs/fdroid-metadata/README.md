@@ -18,7 +18,9 @@ signature onto it and publishes that. This way Obtainium users (who installed
 the GitHub APK) and F-Droid users share one signing key, so updates flow between
 them without an uninstall/reinstall.
 
-- `commit: v1.0.3` pins the build to the release tag. The app version lives as
+- `commit: ac67043…` pins the build to the **full commit hash** of the `v1.0.3`
+  tag (F-Droid policy: a hash is immutable, a tag/branch can move). The app
+  version lives as
   inline literals in `app/build.gradle.kts` (`versionCode = 10003`,
   `versionName = "1.0.3"`), written by `release.sh` at release time. They are
   literals, not computed, so F-Droid's static `checkupdates` can read them;

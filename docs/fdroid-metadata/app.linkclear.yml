@@ -17,7 +17,7 @@ Binaries: https://github.com/kisst/link-clear/releases/download/v%v/link-clear-v
 Builds:
   - versionName: 1.0.3
     versionCode: 10003
-    commit: v1.0.3
+    commit: ac67043930522206c95df788b91a3a45dfa76705
     subdir: app
     gradle:
       - yes
