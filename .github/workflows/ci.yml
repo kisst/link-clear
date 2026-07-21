@@ -28,11 +28,11 @@ jobs:
 
   dependency-scan:
     runs-on: ubuntu-latest
-    # Warn-only: surfaces new dependency CVEs without blocking the build. The
-    # current findings are confined to build/test tooling (AGP's Unified Test
-    # Platform, ktlint's transitive logback) and never reach the shipped APK.
-    # Flip to blocking once shipping-scope filtering / suppressions are in place.
-    continue-on-error: true
+    # Blocking: fails the build on any CVE in a dependency that actually ships.
+    # The scan closure is limited to the release runtime classpaths (:app and
+    # :unshorten) plus :core's runtime classpath, so build/test-only tooling
+    # (AGP's Unified Test Platform, ktlint's transitive netty/logback) is
+    # excluded and never trips the scan.
     steps:
       - uses: actions/checkout@v4
 
@@ -47,7 +47,10 @@ jobs:
 
       - name: Resolve dependency graph
         run: |
-          ./gradlew -q :app:dependencies :core:dependencies :unshorten:dependencies \
+          ./gradlew -q \
+            :app:dependencies --configuration releaseRuntimeClasspath \
+            :unshorten:dependencies --configuration releaseRuntimeClasspath \
+            :core:dependencies --configuration runtimeClasspath \
             > deps.txt 2>&1 || true
           {
             echo '<project xmlns="http://maven.apache.org/POM/4.0.0">'
